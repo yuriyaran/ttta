@@ -33,7 +33,9 @@
       <div id="status" class="status"></div>
     </div>
 
-    <script>
+    <script type="module">
+      import { downloadCsv, triggerDownload } from "./downloadCsv.js";
+
       const API_URL = "http://localhost:3000";
       const downloadBtn = document.getElementById("downloadBtn");
       const statusEl = document.getElementById("status");
@@ -42,42 +44,20 @@
         statusEl.textContent = message;
         statusEl.className = `status ${type} show`;
 
-        if (type === "success" || type === "error") {
+        if (type === "success") {
           setTimeout(() => {
             statusEl.classList.remove("show");
           }, 3000);
         }
       }
 
-      async function downloadCSV() {
+      async function handleDownload() {
         downloadBtn.disabled = true;
-        showStatus("Generating CSV...", "info");
 
         try {
-          const response = await fetch(`${API_URL}/api/v1/export-csv`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            const errorDetails = errorData.details || errorData.error || `Server returned ${response.status}`;
-            throw new Error(errorDetails);
-          }
-
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `candidates-${new Date().toISOString().split("T")[0]}.csv`;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-
-          showStatus("CSV downloaded successfully!", "success");
+          const blob = await downloadCsv(API_URL, showStatus);
+          const filename = `candidates-${new Date().toISOString().split("T")[0]}.csv`;
+          triggerDownload(blob, filename);
         } catch (error) {
           console.error("Download failed:", error);
           showStatus("Failed to download CSV: " + error.message, "error");
@@ -86,7 +66,7 @@
         }
       }
 
-      downloadBtn.addEventListener("click", downloadCSV);
+      downloadBtn.addEventListener("click", handleDownload);
     </script>
   </body>
 </html>
