@@ -3,7 +3,7 @@
 require 'httparty'
 require 'json'
 
-# TeamtailorClient is a wrapper for the Teamtailor API.
+# wrapper for the Teamtailor API
 class TeamtailorClient
   include HTTParty
 
@@ -17,7 +17,15 @@ class TeamtailorClient
   def fetch_candidates
     response = self.class.get(
       '/candidates',
-      query: { include: 'job-applications', page: { size: 30 } },
+      query: {
+        include: 'job-applications',
+        page: { size: 30 },
+        fields: {
+          candidates: 'first-name,last-name,email,job-applications',
+          'job-applications': 'created-at'
+        },
+        sort: '-created_at'
+      },
       headers: headers
     )
 
