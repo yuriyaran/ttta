@@ -56,7 +56,8 @@ async function fetchCandidatesData(): Promise<string> {
   return stdout;
 }
 
-// Serve static files (index.html, styles.css) - so the UI and API are on the same origin (no CORS needed)
+// Serve static files (index.html, index.css)
+// so the UI and API are on the same origin (no CORS needed)
 app.use(
   express.static(
     path.join(
