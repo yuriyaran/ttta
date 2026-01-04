@@ -1,0 +1,79 @@
+{
+  "data": [
+    {
+      "id": "1",
+      "type": "candidates",
+      "attributes": {
+        "first-name": "Amos",
+        "last-name": "Marvin",
+        "email": "applicant1@example.com",
+        "created-at": "2020-10-30T10:33:15.637+01:00"
+      },
+      "relationships": {
+        "job-applications": {
+          "data": [{ "id": "101", "type": "job-applications" }]
+        }
+      }
+    },
+    {
+      "id": "2",
+      "type": "candidates",
+      "attributes": {
+        "first-name": "Randy",
+        "last-name": "Hyatt",
+        "email": "applicant2@example.com",
+        "created-at": "2020-10-30T10:33:15.672+01:00"
+      },
+      "relationships": {
+        "job-applications": {
+          "data": []
+        }
+      }
+    },
+    {
+      "id": "3",
+      "type": "candidates",
+      "attributes": {
+        "first-name": "Sarah",
+        "last-name": "Chen",
+        "email": "sarah.chen@example.com",
+        "created-at": "2020-11-05T14:20:30.123+01:00"
+      },
+      "relationships": {
+        "job-applications": {
+          "data": [
+            { "id": "102", "type": "job-applications" },
+            { "id": "103", "type": "job-applications" }
+          ]
+        }
+      }
+    }
+  ],
+  "included": [
+    {
+      "id": "101",
+      "type": "job-applications",
+      "attributes": {
+        "created-at": "2020-11-01T09:00:00.000+01:00"
+      }
+    },
+    {
+      "id": "102",
+      "type": "job-applications",
+      "attributes": {
+        "created-at": "2020-11-06T10:15:00.000+01:00"
+      }
+    },
+    {
+      "id": "103",
+      "type": "job-applications",
+      "attributes": {
+        "created-at": "2020-11-10T16:30:00.000+01:00"
+      }
+    }
+  ],
+  "meta": {
+    "record-count": 3,
+    "page-count": 1
+  }
+}
