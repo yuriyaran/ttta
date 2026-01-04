@@ -24,12 +24,14 @@ class TeamtailorClient
           candidates: 'first-name,last-name,email,job-applications',
           'job-applications': 'created-at'
         },
-        sort: '-created_at'
       },
       headers: headers
     )
 
-    raise StandardError, "API request failed with status #{response.code}" unless response.success?
+    unless response.success?
+      error_body = response.body[0..500] rescue 'Unable to read response body'
+      raise StandardError, "API request failed with status #{response.code}. Response: #{error_body}"
+    end
 
     JSON.parse(response.body)
   end

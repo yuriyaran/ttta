@@ -35,7 +35,7 @@ async function fetchCandidatesData(): Promise<string> {
   }
 
   console.log("Fetching fresh candidates data from Teamtailor");
-  const { stdout } = await execFileAsync(
+  const { stdout, stderr } = await execFileAsync(
     "ruby",
     [path.join(RUBY_BIN, "fetch_candidates.rb")],
     {
@@ -43,6 +43,10 @@ async function fetchCandidatesData(): Promise<string> {
       maxBuffer: 10 * 1024 * 1024,
     },
   );
+
+  if (stderr) {
+    console.error("[fetch_candidates stderr]:", stderr);
+  }
 
   candidatesCache = {
     data: stdout,
@@ -53,7 +57,6 @@ async function fetchCandidatesData(): Promise<string> {
 }
 
 // Serve static files (index.html, styles.css) - so the UI and API are on the same origin (no CORS needed)
-// In dev: __dirname is node/, in production: __dirname is dist/ so we need ../node
 app.use(
   express.static(
     path.join(
@@ -80,7 +83,9 @@ app.post("/api/v1/export-csv", async (req: Request, res: Response) => {
     });
 
     csvProcess.stderr.on("data", (data) => {
-      csvError += data.toString();
+      const stderrText = data.toString();
+      csvError += stderrText;
+      console.error("[export_csv stderr]:", stderrText);
     });
 
     await new Promise((resolve, reject) => {
@@ -104,7 +109,11 @@ app.post("/api/v1/export-csv", async (req: Request, res: Response) => {
     res.send(csvOutput);
   } catch (error) {
     console.error("Error exporting CSV:", error);
-    res.status(500).json({ error: "Failed to export CSV" });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    res.status(500).json({
+      error: "Failed to export CSV",
+      details: errorMessage
+    });
   }
 });
 

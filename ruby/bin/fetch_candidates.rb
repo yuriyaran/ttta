@@ -18,6 +18,7 @@ begin
   puts JSON.generate(result)
   exit 0
 rescue StandardError => e
-  warn "Error: #{e.message}"
+  warn "[fetch_candidates] Error: #{e.message}"
+  warn "[fetch_candidates] Backtrace: #{e.backtrace.first(3).join(' <- ')}" if e.backtrace
   exit 1
 end

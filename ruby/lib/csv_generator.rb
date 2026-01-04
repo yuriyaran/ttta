@@ -32,20 +32,28 @@ class CsvGenerator
   end
 
   def extract_candidate_data(candidate)
+    attrs = candidate['attributes'] || {}
     [
       candidate['id'],
-      candidate['attributes']['first-name'],
-      candidate['attributes']['last-name'],
-      candidate['attributes']['email']
+      attrs['first-name'] || '',
+      attrs['last-name'] || '',
+      attrs['email'] || ''
     ]
+  rescue StandardError => e
+    warn "[csv_generator] Error extracting candidate #{candidate['id']}: #{e.message}"
+    [candidate['id'], '', '', '']
   end
 
   def process_job_applications(csv, candidate_data, job_app_refs)
     job_app_refs.each do |app_ref|
       job_app = find_job_application(app_ref['id'])
-      next unless job_app
+      unless job_app
+        warn "[csv_generator] Warning: Job application #{app_ref['id']} not found in included data"
+        next
+      end
 
-      csv << (candidate_data + [job_app['id'], job_app['attributes']['created-at']])
+      created_at = job_app.dig('attributes', 'created-at') || ''
+      csv << (candidate_data + [job_app['id'], created_at])
     end
   end
 

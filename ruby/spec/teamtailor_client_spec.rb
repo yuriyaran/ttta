@@ -26,8 +26,15 @@ RSpec.describe TeamtailorClient do
 
     context 'when API call is successful' do
       before do
-        stub_request(:get, "#{api_url}?include=job-applications&page[size]=30")
+        # Stub must match all query parameters sent by the client
+        stub_request(:get, api_url)
           .with(
+            query: {
+              'include' => 'job-applications',
+              'page[size]' => '30',
+              'fields[candidates]' => 'first-name,last-name,email,job-applications',
+              'fields[job-applications]' => 'created-at'
+            },
             headers: {
               'Authorization' => "Token token=#{api_key}",
               'X-Api-Version' => test_date
@@ -61,14 +68,15 @@ RSpec.describe TeamtailorClient do
       it 'includes job-applications in the request' do
         client.fetch_candidates
 
-        expect(WebMock).to have_requested(:get, "#{api_url}?include=job-applications&page[size]=30")
+        expect(WebMock).to have_requested(:get, api_url)
+          .with(query: hash_including('include' => 'job-applications'))
       end
 
       it 'sends correct authorization header' do
         client.fetch_candidates
 
-        expect(WebMock).to have_requested(:get, "#{api_url}?include=job-applications&page[size]=30")
-          .with(headers: { 'Authorization' => "Token token=#{api_key}" })
+        expect(WebMock).to have_requested(:get, api_url)
+          .with(query: hash_including('include' => 'job-applications'))
       end
 
       it 'returns candidates with correct type' do
@@ -116,7 +124,15 @@ RSpec.describe TeamtailorClient do
 
     context 'when API call fails' do
       before do
-        stub_request(:get, "#{api_url}?include=job-applications&page[size]=30")
+        stub_request(:get, api_url)
+          .with(
+            query: {
+              'include' => 'job-applications',
+              'page[size]' => '30',
+              'fields[candidates]' => 'first-name,last-name,email,job-applications',
+              'fields[job-applications]' => 'created-at'
+            }
+          )
           .to_return(status: 401, body: { error: 'Unauthorized' }.to_json)
       end
 

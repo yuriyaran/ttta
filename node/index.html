@@ -62,7 +62,9 @@
           });
 
           if (!response.ok) {
-            throw new Error(`Server returned ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            const errorDetails = errorData.details || errorData.error || `Server returned ${response.status}`;
+            throw new Error(errorDetails);
           }
 
           const blob = await response.blob();
