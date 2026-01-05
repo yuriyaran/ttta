@@ -115,7 +115,7 @@ graph TB
 ## Tech Stack
 - **Frontend**: TypeScript, Vanilla JS (no framework), Vite build
 - **Backend**: Express 5, Node 20+
-- **Scripts**: Ruby 3.x, HTTParty, CSV stdlib
+- **Scripts**: Ruby 4, HTTParty, CSV stdlib
 - **Testing**: Vitest (Node), RSpec (Ruby)
 
 ## External Dependencies
