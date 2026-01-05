@@ -1,5 +1,3 @@
-# Teamtailor Test Assignment
-
 A basic (framework-less) web application that downloads candidates' data with their job applications from the Teamtailor API in a CSV file format.
 
 ## Requirements
@@ -31,11 +29,13 @@ Open http://localhost:3000 and click **Download CSV** button.
 
 ## Architectural Decisions
 
+All components and diagram mindmap are layed out separately in [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ### 1. **`Node.js` + `Ruby` (with process spawning)**
 
 Uses both Node.js and Ruby for the sake of test assignment. Each technology handles what it does best:
 
-- **`Node.js`:** HTTP server, webpage
+- **`Node.js`:** HTTP server, webpage, static files
 - **`Ruby`:** Teamtailor API integration, data transformation, CSV generation
 
 Rather a debatable solution for production code. It was more of an experiment to try something new outside conventional frameworks approach.
