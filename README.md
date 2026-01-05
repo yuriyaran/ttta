@@ -15,7 +15,9 @@ A basic (framework-less) web application that downloads candidates' data with th
 
 ### Demo
 
-assets/demo.webm
+![demo screenshot](demo.webp)
+
+[Demo video capture](https://drive.google.com/file/d/1csIo55M4ha17PfpKy3lTwxEpg-MbtMpk/view?usp=sharing)
 
 ## Quick Start
 
