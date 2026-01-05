@@ -1,72 +1,90 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TTTA - Export Candidates</title>
-    <link rel="stylesheet" href="./index.css" />
-    <link
-      rel="shortcut icon"
-      href="https://res.cloudinary.com/postman/image/upload/v1610442763/team/oal3holec8tcwcdl9eyl.ico"
-    />
-  </head>
 
-  <body>
-    <div class="container">
-      <h1>Candidates Export</h1>
-      <p class="subtitle">Download candidates with their applications as CSV</p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TTTA - Export Candidates</title>
+  <link rel="stylesheet" href="./index.css" />
+  <link rel="shortcut icon"
+    href="https://res.cloudinary.com/postman/image/upload/v1610442763/team/oal3holec8tcwcdl9eyl.ico" />
+</head>
 
-      <button id="downloadBtn" class="download-btn">
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M10 13L5 8H8V3H12V8H15L10 13Z" fill="currentColor" />
-          <path d="M3 15V17H17V15H3Z" fill="currentColor" />
-        </svg>
-        Download CSV
-      </button>
+<body>
+  <div class="container">
+    <h1>Candidates Export</h1>
+    <p class="subtitle">Download candidates with their applications as CSV</p>
 
-      <div id="status" class="status"></div>
-    </div>
+    <button id="downloadBtn" class="download-btn"></button>
+    <div id="status" class="status"></div>
+  </div>
 
-    <script type="module">
-      import { downloadCsv, triggerDownload } from "./downloadCsv.js";
+  <script type="module">
+    import { downloadCsv, triggerDownload } from "./downloadCsv.js";
 
-      const API_URL = "http://localhost:3000";
-      const downloadBtn = document.getElementById("downloadBtn");
-      const statusEl = document.getElementById("status");
+    const API_URL = "http://localhost:3000";
+    const downloadBtn = document.getElementById("downloadBtn");
+    const btnText = document.getElementById("btnText");
+    const statusEl = document.getElementById("status");
 
-      function showStatus(message, type = "info") {
-        statusEl.textContent = message;
-        statusEl.className = `status ${type} show`;
+    const downloadIcon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 13L5 8H8V3H12V8H15L10 13Z" fill="currentColor" />
+        <path d="M3 15V17H17V15H3Z" fill="currentColor" />
+      </svg>`;
+    const reloadIcon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C12.211 3 14.209 4.084 15.451 5.724L13 8H19V2L17 4C15.259 2.146 12.754 1 10 1C5.029 1 1 5.029 1 10C1 14.971 5.029 19 10 19C14.971 19 19 14.971 19 10H17Z" fill="currentColor" />
+      </svg>`;
 
-        if (type === "success") {
-          setTimeout(() => {
-            statusEl.classList.remove("show");
-          }, 3000);
+    let downloadedRecordCount = 0;
+    let currentPageUrl = null;
+
+    // Helper to render button with icon and text
+    function setButtonContent(icon, text) {
+      downloadBtn.innerHTML = icon + `<span id="btnText">${text}</span>`;
+    }
+
+    // Initialize button
+    setButtonContent(downloadIcon, 'Download CSV');
+
+    function showStatus(message, type = "info") {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type} show`;
+    }
+
+    async function handleDownload() {
+      downloadBtn.disabled = true;
+
+      try {
+        const { blob, meta, links, recordCount } = await downloadCsv(API_URL, currentPageUrl, showStatus);
+        const filename = `candidates-${new Date().toISOString().split("T")[0]}.csv`;
+        triggerDownload(blob, filename);
+
+        // Show metadata if available
+        if (meta && meta['record-count']) {
+          downloadedRecordCount += recordCount;
+          showStatus(`Downloaded ${downloadedRecordCount} candidates out of ${meta['record-count']}.`, 'success');
         }
-      }
 
-      async function handleDownload() {
-        downloadBtn.disabled = true;
-
-        try {
-          const blob = await downloadCsv(API_URL, showStatus);
-          const filename = `candidates-${new Date().toISOString().split("T")[0]}.csv`;
-          triggerDownload(blob, filename);
-        } catch (error) {
-          console.error("Download failed:", error);
-          showStatus("Failed to download CSV: " + error.message, "error");
-        } finally {
-          downloadBtn.disabled = false;
+        // Update button for next batch
+        if (links && links.next) {
+          currentPageUrl = links.next;
+          document.getElementById('btnText').textContent = 'Download CSV (Next Batch)';
+        } else {
+          // No more data - change to refresh button
+          setButtonContent(reloadIcon, 'Page Refresh');
+          downloadBtn.removeEventListener('click', handleDownload);
+          downloadBtn.addEventListener('click', () => window.location.reload());
         }
+      } catch (error) {
+        console.error('Download failed:', error);
+        showStatus('Failed to download CSV: ' + error.message, 'error');
+      } finally {
+        downloadBtn.disabled = false;
       }
+    }
 
-      downloadBtn.addEventListener("click", handleDownload);
-    </script>
-  </body>
+    downloadBtn.addEventListener("click", handleDownload);
+  </script>
+</body>
+
 </html>

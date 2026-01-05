@@ -14,12 +14,16 @@ class TeamtailorClient
     raise StandardError, 'API key is required' if @api_key.nil? || @api_key.empty?
   end
 
-  def fetch_candidates
+  def fetch_candidates(pageAfter: nil)
+    page = { size: 30 }
+    after  = pageAfter.to_s.strip
+    page[:after]  = after  unless after.empty?
+
     response = self.class.get(
       '/candidates',
       query: {
         include: 'job-applications',
-        page: { size: 30 },
+        page: page,
         fields: {
           candidates: 'first-name,last-name,email,job-applications',
           'job-applications': 'created-at'

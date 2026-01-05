@@ -12,8 +12,10 @@ begin
     exit 1
   end
 
+  page_after = ENV.fetch('PAGE_AFTER', nil)
+
   client = TeamtailorClient.new(api_key)
-  result = client.fetch_candidates
+  result = client.fetch_candidates(pageAfter: page_after)
 
   puts JSON.generate(result)
   exit 0

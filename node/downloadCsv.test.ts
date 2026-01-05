@@ -17,23 +17,23 @@ describe("downloadCsv", () => {
 
   describe("successful download", () => {
     it("should fetch CSV data successfully", async () => {
-      const mockBlob = new Blob(
-        ["candidate_id,first_name,last_name\n1,John,Doe"],
-        {
-          type: "text/csv",
-        },
-      );
+      const csvData = "candidate_id,first_name,last_name\n1,John,Doe";
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        blob: async () => mockBlob,
+        json: async () => ({
+          csv: csvData,
+          meta: {},
+          links: {},
+          recordCount: 1,
+        }),
       });
 
       const onStatusChange = (message: string, type: string) => {
         statusChanges.push({ message, type });
       };
 
-      const result = await downloadCsv(API_URL, onStatusChange);
+      const result = await downloadCsv(API_URL, null, onStatusChange);
 
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:3000/api/v1/export-csv",
@@ -42,9 +42,12 @@ describe("downloadCsv", () => {
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({ url: null }),
         },
       );
-      expect(result).toBeInstanceOf(Blob);
+      expect(result.blob).toBeInstanceOf(Blob);
+      expect(result.meta).toEqual({});
+      expect(result.recordCount).toBe(1);
       expect(statusChanges).toEqual([
         { message: "Generating CSV...", type: "info" },
         { message: "CSV downloaded successfully!", type: "success" },
@@ -63,7 +66,7 @@ describe("downloadCsv", () => {
         }),
       });
 
-      await expect(downloadCsv(API_URL)).rejects.toThrow(
+      await expect(downloadCsv(API_URL, null, () => {})).rejects.toThrow(
         "Ruby process exited with code 1",
       );
     });
@@ -77,7 +80,7 @@ describe("downloadCsv", () => {
         }),
       });
 
-      await expect(downloadCsv(API_URL)).rejects.toThrow(
+      await expect(downloadCsv(API_URL, null, () => {})).rejects.toThrow(
         "Failed to export CSV",
       );
     });
@@ -94,7 +97,7 @@ describe("downloadCsv", () => {
         blob: async () => mockBlob,
       });
 
-      await expect(downloadCsv(API_URL)).rejects.toThrow("Internal error");
+      await expect(downloadCsv(API_URL, null, () => {})).rejects.toThrow("Internal error");
     });
 
     it("should NOT treat empty error object as success", async () => {
@@ -104,7 +107,7 @@ describe("downloadCsv", () => {
         json: async () => ({}),
       });
 
-      await expect(downloadCsv(API_URL)).rejects.toThrow("Server returned 500");
+      await expect(downloadCsv(API_URL, null, () => {})).rejects.toThrow("Server returned 500");
     });
   });
 });

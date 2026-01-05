@@ -12,34 +12,28 @@ const execFileAsync = promisify(execFile);
 const app = express();
 const PORT = 3000;
 
+// Body parser middleware
+app.use(express.json());
+
 const RUBY_BIN = path.join(__dirname, "../ruby/bin");
 
-// Simple in-memory cache
-interface CacheEntry {
-  data: string;
-  timestamp: number;
-}
-
-let candidatesCache: CacheEntry | null = null;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-function isCacheValid(): boolean {
-  if (!candidatesCache) return false;
-  return Date.now() - candidatesCache.timestamp < CACHE_TTL;
-}
-
-async function fetchCandidatesData(): Promise<string> {
-  if (isCacheValid() && candidatesCache) {
-    console.log("Returning cached candidates data");
-    return candidatesCache.data;
-  }
-
+/**
+ * Fetches candidates data from Teamtailor API via Ruby script
+ *
+ * @param pageAfter - Pagination cursor for fetching records after this cursor
+ * @returns Promise resolving to JSON string with candidates data
+ */
+async function fetchCandidatesData(pageAfter: string = ''): Promise<string> {
   console.log("Fetching fresh candidates data from Teamtailor");
   const { stdout, stderr } = await execFileAsync(
     "ruby",
     [path.join(RUBY_BIN, "fetch_candidates.rb")],
     {
-      env: { ...process.env, API_KEY: process.env.API_KEY },
+      env: {
+        ...process.env,
+        API_KEY: process.env.API_KEY,
+        PAGE_AFTER: pageAfter,
+      },
       maxBuffer: 10 * 1024 * 1024,
     },
   );
@@ -47,11 +41,6 @@ async function fetchCandidatesData(): Promise<string> {
   if (stderr) {
     console.error("[fetch_candidates stderr]:", stderr);
   }
-
-  candidatesCache = {
-    data: stdout,
-    timestamp: Date.now(),
-  };
 
   return stdout;
 }
@@ -70,8 +59,17 @@ app.use(
 // Routes
 app.post("/api/v1/export-csv", async (req: Request, res: Response) => {
   try {
-    // Fetch candidates (uses cache if available)
-    const candidatesJson = await fetchCandidatesData();
+    const { url } = req.body || {};
+
+    // Extract pagination cursor from URL if provided
+    let pageAfter = '';
+    if (url) {
+      const urlObj = new URL(url);
+      pageAfter = urlObj.searchParams.get('page[after]') || '';
+    }
+
+    // Fetch candidates
+    const candidatesJson = await fetchCandidatesData(pageAfter);
 
     // Then convert to CSV using spawn to pipe stdin
     const csvProcess = spawn("ruby", [path.join(RUBY_BIN, "export_csv.rb")]);
@@ -105,15 +103,21 @@ app.post("/api/v1/export-csv", async (req: Request, res: Response) => {
       csvProcess.stdin.end();
     });
 
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", "attachment; filename=candidates.csv");
-    res.send(csvOutput);
+    const parsed = JSON.parse(candidatesJson);
+
+    res.json({
+      csv: csvOutput,
+      meta: parsed.meta || {},
+      links: parsed.links || {},
+      recordCount: parsed.data?.length || 0
+    });
   } catch (error) {
     console.error("Error exporting CSV:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
     res.status(500).json({
       error: "Failed to export CSV",
-      details: errorMessage
+      details: errorMessage,
     });
   }
 });
@@ -121,13 +125,6 @@ app.post("/api/v1/export-csv", async (req: Request, res: Response) => {
 // Health check
 app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok" });
-});
-
-// Clear cache
-app.post("/api/v1/cache/clear", (req: Request, res: Response) => {
-  candidatesCache = null;
-  console.log("Cache cleared");
-  res.json({ message: "Cache cleared successfully" });
 });
 
 // Handle 404

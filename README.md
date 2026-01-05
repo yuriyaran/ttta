@@ -1,6 +1,24 @@
 # Teamtailor Test Assignment
 
-A web application that downloads candidate data with their job applications from the Teamtailor API as a CSV file.
+A basic (framework-less) web application that downloads candidates' data with their job applications from the Teamtailor API in a CSV file format.
+
+## Requirements
+
+- connect to the Teamtailor API and fetch all candidates and their job applications
+- convert the response into a CSV with columns: `candidate_id`, `first_name`, `last_name`, `email`, `job_application_id`, and `job_application_created_at`
+- let the user download the file by clicking a button
+
+## Implementation Details
+
+- HTML page with button that triggers CSV file download
+- API pagination implemented as a consecutive user-triggered process. Each button click prepares CSV with next batch of data until all records are saved. Page reload resets the pagination.
+
+### Demo
+
+<video controls width="800">
+  <source src="assets/demo.webm" type="video/webm">
+  Your browser does not support the video tag.
+</video>
 
 ## Quick Start
 
@@ -17,8 +35,10 @@ Open http://localhost:3000 and click **Download CSV** button.
 
 Uses both Node.js and Ruby for the sake of test assignment. Each technology handles what it does best:
 
-- **`Node.js`:** HTTP server, routing, caching, static files
+- **`Node.js`:** HTTP server, webpage
 - **`Ruby`:** Teamtailor API integration, data transformation, CSV generation
+
+Rather a debatable solution for production code. It was more of an experiment to try something new outside conventional frameworks approach.
 
 ### 2. **Inter-Process Communication (`stdin`/`stdout`/`stderr`)**
 
@@ -61,23 +81,7 @@ Single API request fetches **candidates** AND their **applications**, with requi
 - `fields` filters away noise (only required data pulled)
 - `page` avoids long polling API calls
 
-### 5. **In-Memory Caching**
-
-**Benefits:**
-
-- repeated downloads don't need fresh data every time
-- simple, no external dependencies (Redis, etc.)
-- eliminates latency/slow API response
-
-**Trade-off:**
-
-Data can be stale up to 5 minutes (`POST /cache/clear` resets cache)
-
-```bash
-curl -X POST http://localhost:3000/api/v1/cache/clear
-```
-
-### 6. **Multi-Layer Error Handling**
+### 5. **Multi-Layer Error Handling**
 
 **Ruby (integration layer):**
 
@@ -96,7 +100,7 @@ curl -X POST http://localhost:3000/api/v1/cache/clear
 - Displays user-friendly error messages
 - Shows API error details when available
 
-### 7. **Encrypted Environment Variables with `dotenvx`**
+### 6. **Encrypted Environment Variables with `dotenvx`**
 
 **Benefits:**
 
@@ -104,18 +108,20 @@ curl -X POST http://localhost:3000/api/v1/cache/clear
 - commits safely encrypted `.env` to git
 - is decrypted at runtime
 
-### 8. **Minimal UI**
+### 7. **Minimal UI**
 
-- No build step for CSS (modern browsers support CSS nesting)
+- No build step for CSS (no pre-processors)
 - Single-page, single-purpose interface
-- Fast, no framework overhead
+- Simple, no framework overhead
 
-### 9. **Code Maintenance**
+### 8. **Code Maintenance**
 
 Implemented tools:
 
 - Prettier
 - Rubocop
+- TSDoc
+- `concurrently` (helps maintaining live-reload in development mode)
 
 ## Available Endpoints
 
@@ -137,35 +143,9 @@ Generates and downloads a CSV file with candidate data.
 - `job_application_id` - Application ID (`null` if no applications)
 - `job_application_created_at` - Application creation timestamp (`null` if no applications)
 
-### `POST /api/v1/cache/clear`
-
-Clears the candidate data cache.
-
 ### `GET /health`
 
 Health check endpoint.
-
-## Folder Structure
-
-```
-.
-├── node/                        # Node.js + Express server
-│   ├── node/downloadCsv.test.ts # Downloads CSV test
-│   ├── node/downloadCsv.ts      # Downloads CSV from the API endpoint
-│   ├── index.ts                 # Express server
-│   ├── index.html               # Frontend UI
-│   └── index.css                # Styling
-├── ruby/                        # Ruby scripts for data processing
-│   ├── bin/
-│   │   ├── export_csv.rb        # Converts JSON to CSV
-│   │   └── fetch_candidates.rb  # Fetches data from Teamtailor API
-│   ├── lib/
-│   │   ├── csv_generator.rb     # CSV generation logic
-│   │   └── teamtailor_client.rb # API client with JSON:API support
-│   └── spec/                    # RSpec tests
-├── .env                         # Encrypted API key (dotenvx)
-└── package.json                 # Node.js dependencies
-```
 
 ## Technology Stack
 

@@ -1,13 +1,16 @@
 /**
  * Downloads CSV from the API endpoint
+ *
  * @param apiUrl - Base API URL
+ * @param pageUrl - Optional pagination URL (for next page)
  * @param onStatusChange - Callback for status updates (message, type)
- * @returns CSV blob
+ * @returns Promise resolving to CSV response with blob and metadata
  */
 export async function downloadCsv(
   apiUrl: string,
+  pageUrl: string | null = null,
   onStatusChange: (message: string, type: string) => void = () => {}
-): Promise<Blob> {
+): Promise<{ blob: Blob; meta: any; links: any; recordCount: number }> {
   onStatusChange("Generating CSV...", "info");
 
   const response = await fetch(`${apiUrl}/api/v1/export-csv`, {
@@ -15,24 +18,36 @@ export async function downloadCsv(
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({ url: pageUrl }),
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     const errorDetails =
-      errorData.details || errorData.error || `Server returned ${response.status}`;
+      errorData.details ||
+      errorData.error ||
+      `Server returned ${response.status}`;
     throw new Error(errorDetails);
   }
 
-  const blob = await response.blob();
+  const data = await response.json();
+  const blob = new Blob([data.csv], { type: "text/csv" });
+
   onStatusChange("CSV downloaded successfully!", "success");
-  return blob;
+  return {
+    blob,
+    meta: data.meta,
+    links: data.links,
+    recordCount: data.recordCount,
+  };
 }
 
 /**
  * Triggers browser download of a blob
+ *
  * @param blob - The blob to download
  * @param filename - The filename for the download
+ * @returns void
  */
 export function triggerDownload(blob: Blob, filename: string): void {
   const url = window.URL.createObjectURL(blob);
