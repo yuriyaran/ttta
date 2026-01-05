@@ -62,7 +62,7 @@ graph TB
     style ENDPOINT fill:#fff4e1,stroke:#cc6600,stroke-width:3px
 ```
 
-## **Core Data Flow**
+## Core Data Flow
 1. **Browser** → User clicks download button
 2. **Client.ts** → DownloadHandler makes API call
 3. **Server.ts** → Express receives request, orchestrates Ruby scripts
@@ -72,7 +72,7 @@ graph TB
 
 ---
 
-## ** Frontend (Browser)**
+## Frontend (Browser)
 - **client.ts** - Initializes app on DOM ready
 - **DownloadHandler** - Core state machine handling:
   - Button clicks
@@ -84,7 +84,7 @@ graph TB
 
 ---
 
-## ** Backend (Node.js Express)**
+## Backend (Node.js Express)
 - **server.ts** - Single endpoint architecture
   - `POST /api/v1/export-csv` - Main workflow orchestrator
   - Extracts pagination cursor from URL
@@ -96,7 +96,7 @@ graph TB
 
 ---
 
-## ** Ruby Layer**
+## Ruby Layer
 - **fetch_candidates.rb** - CLI script wrapper
   - Reads `API_KEY` + `PAGE_AFTER` from env
   - Outputs JSON to stdout
@@ -113,7 +113,7 @@ graph TB
 
 ---
 
-## ** Key Patterns**
+## Key Patterns
 - **Process Isolation** - Node spawns Ruby for each API operation
 - **Streaming** - CSV generation uses stdin/stdout pipes
 - **Pagination** - Client tracks `links.next` URL, server stateless
@@ -122,7 +122,7 @@ graph TB
 
 ---
 
-## ** Tech Stack**
+## Tech Stack
 - **Frontend**: TypeScript, Vanilla JS (no framework), Vite build
 - **Backend**: Express 5, Node 20+
 - **Scripts**: Ruby 3.x, HTTParty, CSV stdlib
@@ -130,7 +130,7 @@ graph TB
 
 ---
 
-## ** External Dependencies**
+## External Dependencies
 - **Teamtailor API** - Source of candidates data
   - Auth: Bearer token
   - Format: JSON:API with includes
