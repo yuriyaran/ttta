@@ -29,7 +29,7 @@ Open http://localhost:3000 and click **Download CSV** button.
 
 ## Architectural Decisions
 
-All components and diagram mindmap are layed out separately in [ARCHITECTURE.md](ARCHITECTURE.md).
+All components and diagram mindmap are layed out separately in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ### 1. **`Node.js` + `Ruby` (with process spawning)**
 
