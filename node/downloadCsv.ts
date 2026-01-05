@@ -1,3 +1,8 @@
+export interface CsvLinks {
+  next?: string;
+  prev?: string;
+}
+
 /**
  * Downloads CSV from the API endpoint
  *

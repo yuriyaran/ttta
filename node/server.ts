@@ -14,7 +14,7 @@ const PORT = 3000;
 
 // Body parser middleware
 app.use(express.json());
-
+app.use("/dist", express.static("dist"));
 const RUBY_BIN = path.join(__dirname, "../ruby/bin");
 
 /**
@@ -24,7 +24,7 @@ const RUBY_BIN = path.join(__dirname, "../ruby/bin");
  * @returns Promise resolving to JSON string with candidates data
  */
 async function fetchCandidatesData(pageAfter: string = ''): Promise<string> {
-  console.log("Fetching fresh candidates data from Teamtailor");
+  console.log(`Fetching candidates data from Teamtailor: ${pageAfter}`);
   const { stdout, stderr } = await execFileAsync(
     "ruby",
     [path.join(RUBY_BIN, "fetch_candidates.rb")],

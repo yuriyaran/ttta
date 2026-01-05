@@ -22,8 +22,9 @@ A basic (framework-less) web application that downloads candidates' data with th
 ## Quick Start
 
 ```bash
-pnpm install
-pnpm dev
+pnpm install   # install dependencies
+pnpm build:dev # compile ts files into js
+pnpm dev       # run development server
 ```
 
 Open http://localhost:3000 and click **Download CSV** button.
