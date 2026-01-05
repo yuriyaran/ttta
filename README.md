@@ -15,10 +15,7 @@ A basic (framework-less) web application that downloads candidates' data with th
 
 ### Demo
 
-<video controls width="800">
-  <source src="assets/demo.webm" type="video/webm">
-  Your browser does not support the video tag.
-</video>
+assets/demo.webm
 
 ## Quick Start
 
