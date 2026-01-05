@@ -70,8 +70,6 @@ graph TB
 5. **Server** → Returns CSV + pagination metadata
 6. **Browser** → Downloads file, updates UI for next batch
 
----
-
 ## Frontend (Browser)
 - **client.ts** - Initializes app on DOM ready
 - **DownloadHandler** - Core state machine handling:
@@ -82,8 +80,6 @@ graph TB
 - **uiHelpers.ts** - DOM utilities (status messages, button content)
 - **icons.ts** - SVG definitions (download, reload)
 
----
-
 ## Backend (Node.js Express)
 - **server.ts** - Single endpoint architecture
   - `POST /api/v1/export-csv` - Main workflow orchestrator
@@ -93,8 +89,6 @@ graph TB
     2. `export_csv.rb` (via spawn + stdin pipe)
   - Returns `{csv, meta, links, recordCount}`
   - Serves static files (no CORS needed)
-
----
 
 ## Ruby Layer
 - **fetch_candidates.rb** - CLI script wrapper
@@ -111,8 +105,6 @@ graph TB
   - Denormalizes candidates × job applications
   - Handles missing data gracefully
 
----
-
 ## Key Patterns
 - **Process Isolation** - Node spawns Ruby for each API operation
 - **Streaming** - CSV generation uses stdin/stdout pipes
@@ -120,15 +112,11 @@ graph TB
 - **Progressive Download** - Downloads one batch at a time, accumulates count
 - **Error Boundaries** - Each layer has try/catch with specific error messages
 
----
-
 ## Tech Stack
 - **Frontend**: TypeScript, Vanilla JS (no framework), Vite build
 - **Backend**: Express 5, Node 20+
 - **Scripts**: Ruby 3.x, HTTParty, CSV stdlib
 - **Testing**: Vitest (Node), RSpec (Ruby)
-
----
 
 ## External Dependencies
 - **Teamtailor API** - Source of candidates data
